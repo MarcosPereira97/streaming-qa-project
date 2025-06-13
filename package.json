@@ -1,0 +1,33 @@
+{
+    "name": "streaming-platform",
+    "version": "1.0.0",
+    "description": "Modern streaming platform for test automation practice",
+    "scripts": {
+        "install:all": "npm run install:backend && npm run install:frontend",
+        "install:backend": "cd backend/api-gateway && npm install && cd ../services/user && npm install && cd ../content && npm install",
+        "install:frontend": "cd frontend && npm install",
+        "start": "docker-compose up -d",
+        "stop": "docker-compose down",
+        "logs": "docker-compose logs -f",
+        "dev:backend": "concurrently \"npm run dev:gateway\" \"npm run dev:user\" \"npm run dev:content\"",
+        "dev:gateway": "cd backend/api-gateway && npm run dev",
+        "dev:user": "cd backend/services/user && npm run dev",
+        "dev:content": "cd backend/services/content && npm run dev",
+        "dev:frontend": "cd frontend && npm start",
+        "build": "docker-compose build",
+        "seed:db": "cd backend/database && psql -U streaming_user -d streaming_db -f init.sql",
+        "test": "cd test && npm test",
+        "clean": "docker-compose down -v && rm -rf node_modules */node_modules */*/node_modules"
+    },
+    "keywords": [
+        "streaming",
+        "platform",
+        "test-automation",
+        "microservices"
+    ],
+    "author": "Marcos Henrique",
+    "license": "MIT",
+    "devDependencies": {
+        "concurrently": "^8.2.2"
+    }
+}

@@ -14,7 +14,13 @@ const contentSchemas = {
       .valid("Ended", "Returning Series", "Canceled", "In Production")
       .optional(),
     sortBy: Joi.string()
-      .valid("popularity", "release_date", "imdb_rating", "title")
+      .valid(
+        "popularity",
+        "release_date",
+        "imdb_rating",
+        "title",
+        "first_air_date"
+      )
       .default("popularity"),
     order: Joi.string().valid("asc", "desc").default("desc"),
   }),

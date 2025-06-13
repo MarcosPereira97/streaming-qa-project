@@ -1,9 +1,9 @@
-# Removida a versão para eliminar o warning
+version: "3.8"
 
 services:
   # Database
   postgres:
-    image: postgres:15-alpine
+    image: postgres:16-alpine
     container_name: streaming-db
     environment:
       POSTGRES_USER: streaming_user
@@ -13,7 +13,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./database/seed-data/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./backend/database/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - streaming-network
     healthcheck:
@@ -39,22 +39,25 @@ services:
   # API Gateway
   api-gateway:
     build:
-      context: ./api-gateway
+      context: ./backend/api-gateway
       dockerfile: Dockerfile
     container_name: streaming-api-gateway
     ports:
       - "3000:3000"
     environment:
-      NODE_ENV: production
+      NODE_ENV: development
       PORT: 3000
       USER_SERVICE_URL: http://user-service:3001
       CONTENT_SERVICE_URL: http://content-service:3002
       REDIS_URL: redis://redis:6379
-      JWT_SECRET: your-super-secret-jwt-key-change-in-production
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-this}
     depends_on:
-      - redis
-      - user-service
-      - content-service
+      redis:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+      content-service:
+        condition: service_healthy
     networks:
       - streaming-network
     restart: unless-stopped
@@ -62,17 +65,21 @@ services:
   # User Service
   user-service:
     build:
-      context: ./services/user
+      context: ./backend/services/user
       dockerfile: Dockerfile
     container_name: streaming-user-service
     ports:
       - "3001:3001"
     environment:
-      NODE_ENV: production
+      NODE_ENV: development
       PORT: 3001
       DATABASE_URL: postgresql://streaming_user:streaming_pass@postgres:5432/streaming_db
       REDIS_URL: redis://redis:6379
-      JWT_SECRET: your-super-secret-jwt-key-change-in-production
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-this}
+      SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-your-email@gmail.com}
+      SMTP_PASS: ${SMTP_PASS:-your-app-password}
     depends_on:
       postgres:
         condition: service_healthy
@@ -81,21 +88,26 @@ services:
     networks:
       - streaming-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "healthcheck.js"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
 
   # Content Service
   content-service:
     build:
-      context: ./services/content
+      context: ./backend/services/content
       dockerfile: Dockerfile
     container_name: streaming-content-service
     ports:
       - "3002:3002"
     environment:
-      NODE_ENV: production
+      NODE_ENV: development
       PORT: 3002
       DATABASE_URL: postgresql://streaming_user:streaming_pass@postgres:5432/streaming_db
       REDIS_URL: redis://redis:6379
-      TMDB_API_KEY: your-tmdb-api-key-here
+      TMDB_API_KEY: ${TMDB_API_KEY:-your-tmdb-api-key}
     depends_on:
       postgres:
         condition: service_healthy
@@ -104,6 +116,11 @@ services:
     networks:
       - streaming-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
 
   # Frontend
   frontend:
@@ -114,7 +131,7 @@ services:
     ports:
       - "80:80"
     environment:
-      REACT_APP_API_URL: http://localhost:3000
+      REACT_APP_API_URL: http://localhost:3000/api
     depends_on:
       - api-gateway
     networks:

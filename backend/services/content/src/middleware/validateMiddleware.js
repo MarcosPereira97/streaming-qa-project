@@ -1,5 +1,3 @@
-const { ApiError } = require("./errorHandler");
-
 const validate = (schema, property = "body") => {
   return (req, res, next) => {
     const { error, value } = schema.validate(req[property], {
@@ -8,19 +6,19 @@ const validate = (schema, property = "body") => {
     });
 
     if (error) {
-      const errors = error.details.reduce((acc, detail) => {
-        const field = detail.path.join(".");
-        if (!acc[field]) {
-          acc[field] = [];
-        }
-        acc[field].push(detail.message);
-        return acc;
-      }, {});
+      const errors = error.details.map((detail) => ({
+        field: detail.path.join("."),
+        message: detail.message,
+      }));
 
-      throw new ApiError(400, "Validation failed", errors);
+      return res.status(400).json({
+        success: false,
+        message: "Validation error",
+        errors,
+      });
     }
 
-    // Replace request property with validated and sanitized data
+    // Replace request property with validated value
     req[property] = value;
     next();
   };

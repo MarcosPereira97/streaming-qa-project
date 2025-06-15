@@ -1,10 +1,15 @@
 # Dependencies
 node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-lerna-debug.log*
-.pnpm-debug.log*
+.pnp
+.pnp.js
+
+# Testing
+coverage/
+.nyc_output/
+
+# Production
+build/
+dist/
 
 # Environment files
 .env
@@ -13,72 +18,62 @@ lerna-debug.log*
 .env.test.local
 .env.production.local
 
-# Production builds
-build/
-dist/
-out/
-
 # Logs
 logs/
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
 
-# OS files
+# OS
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 
-# IDE files
+# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
-
-# Testing
-coverage/
-.nyc_output/
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
 
 # Docker
-*.pid
-*.seed
-*.pid.lock
-
-# Database
-*.sqlite
-*.sqlite3
-
-# Redis dump
-dump.rdb
+.dockerignore
+docker-compose.override.yml
 
 # Temporary files
 tmp/
 temp/
 *.tmp
 *.temp
-
-# React
-.eslintcache
-
-# Next.js
-.next/
-out/
-
-# Gatsby
 .cache/
-public/
 
-# Misc
+# SSL certificates
 *.pem
-.vercel
-.turbo
+*.key
+*.crt
 
-# Debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# Database
+*.sqlite
+*.sqlite3
+*.db
 
-# Local env files
-.env*.local
+# Backup files
+*.backup
+*.bak
 
-# TypeScript
-*.tsbuildinfo
-next-env.d.ts
+# Package manager locks (comment if you want to commit them)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
